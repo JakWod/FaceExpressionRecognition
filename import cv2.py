@@ -272,8 +272,9 @@ def main():
 
     if choice == '1':
         Tk().withdraw()
-        print("Wybierz obraz wejściowy.")
         image_path = askopenfilename(filetypes=[("Pliki graficzne", "*.jpg *.jpeg *.png")])
+        print("Wybierz obraz wejściowy.")
+        
         
         if not image_path:
             print("Nie wybrano pliku. Program zakończy działanie.")
