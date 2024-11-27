@@ -5,6 +5,7 @@ import random
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 from fer import FER
+import datetime
 
 def get_unique_folder_name(base_folder):
     folder_name = base_folder
@@ -67,7 +68,6 @@ def edit_detected_emotions(emotions):
     
     print("Czy chcesz edytować te emocje? (t/n)")
     edit_choice = input().lower()
-    
     if edit_choice == "t":
         return input_emotions()
     else:
@@ -112,7 +112,7 @@ def process_faces(img, faces, emotion_detector, unique_faces_folder):
         cv2.imwrite(face_output_path, face_img)
         
         transformed_emotions = []
-        for j in range(50):
+        for j in range(10):
             transformed_face = apply_random_transformations(face_img)
             face_img_rgb = cv2.cvtColor(transformed_face, cv2.COLOR_BGR2RGB)
             detected_emotions = emotion_detector.detect_emotions(face_img_rgb)
@@ -243,11 +243,38 @@ def process_webcam(face_classifier, emotion_detector):
         if key == ord('q'):
             break
         elif key == ord('s'):  # Opcjonalnie: możliwość zapisania klatki
-            cv2.imwrite("emotion_detection_snapshot.jpg", frame)
-            print("Zapisano zrzut ekranu")
+            screen_shot(frame)
+        elif key == ord('f'): #Opcjonalne: możliwość zamrożenia klatki
+             freeze(frame)
+                
 
     video_capture.release()
     cv2.destroyAllWindows()
+
+def freeze(current_frame):
+    a = cv2.waitKey(-1)
+    if a == ord('s'):
+        screen_shot(current_frame)
+        freeze(current_frame)
+    elif a == ord('q'):
+        exit()
+        
+        
+def screen_shot(current_frame):
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    screenshot_folder = os.path.join(script_dir, 'screen_shots')
+    if not os.path.exists(screenshot_folder):
+        os.makedirs(screenshot_folder)
+    current_time = datetime.datetime.now()
+    x = str(current_time)
+    map_dict = {'.': '',':': '','-': '', " ": ''}
+    y = (''.join(idx if idx not in map_dict else map_dict[idx] for idx in x)).rstrip(x[-4:])
+    y = str("Screen_Shot_" + y)
+    output_image_path = os.path.join(screenshot_folder, (y + ".jpg"))
+    cv2.imwrite(output_image_path, current_frame)
+    print("Zapisano zrzut ekranu")
+    
+
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -271,9 +298,10 @@ def main():
         print("Nieprawidłowy wybór. Wybierz 1 lub 2.")
 
     if choice == '1':
+        
         Tk().withdraw()
-        image_path = askopenfilename(filetypes=[("Pliki graficzne", "*.jpg *.jpeg *.png")])
         print("Wybierz obraz wejściowy.")
+        image_path = askopenfilename(filetypes=[("Pliki graficzne", "*.jpg *.jpeg *.png")])
         
         
         if not image_path:
@@ -284,7 +312,7 @@ def main():
         if img is None:
             print("Nie udało się wczytać obrazu. Sprawdź, czy plik wejściowy jest prawidłowy.")
             return
-
+        
         faces_folder = os.path.join(script_dir, 'faces')
         if not os.path.exists(faces_folder):
             os.makedirs(faces_folder)
